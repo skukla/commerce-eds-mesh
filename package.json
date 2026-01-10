@@ -1,11 +1,10 @@
 {
-  "name": "commerce-mesh",
-  "version": "1.0.0-beta.2",
+  "name": "commerce-eds-mesh",
+  "version": "1.0.0",
   "private": true,
-  "description": "Adobe API Mesh for Commerce with enhanced product resolvers",
+  "description": "Adobe API Mesh for EDS Commerce storefronts - passthrough configuration with caching",
   "dependencies": {
-    "dotenv": "^17.2.1",
-    "node-fetch": "^3.3.2"
+    "dotenv": "^17.2.1"
   },
   "devDependencies": {
     "@adobe/aio-cli": "^10.0.0",

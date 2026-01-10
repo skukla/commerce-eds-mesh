@@ -56,6 +56,11 @@ const format = {
 function combineSchemaFiles() {
   const schemaDir = path.join(__dirname, '..', 'schema');
 
+  // Return empty if no schema directory (EDS simple mode)
+  if (!fs.existsSync(schemaDir)) {
+    return '';
+  }
+
   // Automatically include all .graphql files in the schema directory
   const schemaFiles = fs
     .readdirSync(schemaDir)
@@ -259,6 +264,12 @@ function buildUtilityInjection(usedFunctions, utilities) {
  */
 function processResolversWithMappings() {
   const resolversDir = path.join(__dirname, '..', 'resolvers-src');
+
+  // Return empty array if no resolvers-src directory (EDS simple mode)
+  if (!fs.existsSync(resolversDir)) {
+    return [];
+  }
+
   const processedDir = path.join(__dirname, '..', 'build', 'resolvers');
 
   // Create build directory structure if it doesn't exist

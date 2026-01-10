@@ -1,8 +1,30 @@
 // Load environment variables
 require('dotenv').config();
 
+/**
+ * EDS Commerce Mesh Configuration
+ *
+ * This mesh is optimized for Edge Delivery Services (EDS) storefronts:
+ * - PASSTHROUGH: No prefix transforms (uses unprefixed operations like productSearch)
+ * - CACHING: Response caching enabled for performance
+ * - SIMPLE: Proxies Commerce GraphQL and Catalog Service directly
+ *
+ * For Headless/Next.js storefronts, use the headless-citisignal-mesh repo instead.
+ */
 module.exports = {
   meshConfig: {
+    // Enable response caching for EDS performance
+    responseConfig: {
+      cache: true,
+      includeHTTPDetails: true,
+      CORS: {
+        credentials: true,
+        exposedHeaders: ['Content-Range', 'X-Content-Range', 'X-Magento-Cache-Id'],
+        maxAge: 60480,
+        methods: ['GET', 'POST'],
+        origin: '*',
+      },
+    },
     sources: [
       {
         name: 'CommerceGraphQL',
@@ -15,17 +37,10 @@ module.exports = {
             },
           },
         },
-        transforms: [
-          {
-            prefix: {
-              value: 'Commerce_',
-              includeRootOperations: true,
-            },
-          },
-        ],
+        // NO prefix transform - EDS uses unprefixed operations
       },
       {
-        name: 'CatalogServiceSandbox',
+        name: 'CatalogService',
         handler: {
           graphql: {
             endpoint: '{env.ADOBE_CATALOG_SERVICE_ENDPOINT}',
@@ -48,17 +63,21 @@ module.exports = {
             },
           },
         },
+        // Encapsulate to avoid conflicts with Commerce GraphQL
+        // This groups Catalog Service operations under the Catalog type
         transforms: [
           {
-            prefix: {
-              value: 'Catalog_',
-              includeRootOperations: true,
+            encapsulate: {
+              applyTo: {
+                query: true,
+                mutation: false,
+              },
             },
           },
         ],
       },
       {
-        name: 'LiveSearchSandbox',
+        name: 'LiveSearch',
         handler: {
           graphql: {
             endpoint: '{env.ADOBE_CATALOG_SERVICE_ENDPOINT}',
@@ -81,37 +100,20 @@ module.exports = {
             },
           },
         },
+        // Encapsulate to avoid conflicts with Commerce GraphQL
         transforms: [
           {
-            prefix: {
-              value: 'Search_',
-              includeRootOperations: true,
+            encapsulate: {
+              applyTo: {
+                query: true,
+                mutation: false,
+              },
             },
           },
         ],
       },
     ],
-    transforms: [
-      {
-        filterSchema: {
-          mode: 'bare',
-          filters: [
-            'Query.{Citisignal_*, Catalog_productSearch, Search_productSearch, Commerce_categoryList}',
-            'Mutation.{Citisignal_*}',
-          ],
-        },
-      },
-    ],
-    // additionalTypeDefs will be added by build script from schema/*.graphql files
-    // additionalResolvers will be added by build script from build/resolvers/*.js files
-    responseConfig: {
-      CORS: {
-        credentials: true,
-        exposedHeaders: ['Content-Range', 'X-Content-Range', 'X-Magento-Cache-Id'],
-        maxAge: 60480,
-        methods: ['GET', 'POST'],
-        origin: '*',
-      },
-    },
+    // NO filterSchema transform - EDS passes through all operations
+    // additionalTypeDefs and additionalResolvers are added by build script if schema/resolvers exist
   },
 };

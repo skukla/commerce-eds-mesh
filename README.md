@@ -1,216 +1,105 @@
-# Commerce Mesh
+# Commerce EDS Mesh
 
-Adobe API Mesh configuration for CitiSignal e-commerce integration. This project orchestrates multiple Adobe Commerce services (Catalog Service, Live Search, Commerce GraphQL) into a unified GraphQL API with enhanced product resolvers and dynamic facet support.
+Adobe API Mesh configuration optimized for **Edge Delivery Services (EDS)** Commerce storefronts.
 
 ## Overview
 
-This API Mesh provides:
+This mesh provides a **passthrough configuration** for EDS storefronts that:
 
-- **Unified GraphQL endpoint** combining multiple Adobe Commerce services
-- **Dynamic facet system** with SEO-friendly URL mapping
-- **Enhanced product resolvers** with normalized data structures
-- **Smart utility injection** - Eliminates code duplication across resolvers
-- **Build-time injection pattern** to overcome API Mesh limitations
-- **SSR-optimized queries** for complete page data in single requests
-- **Clean resolver architecture** - Focus on orchestration, not implementation
+- **No prefix transforms** - Uses unprefixed GraphQL operations (`productSearch`, not `Catalog_productSearch`)
+- **Response caching enabled** - Optimized for EDS performance requirements
+- **Simple proxy** - Passes through Commerce GraphQL and Catalog Service without custom resolvers
 
-## Prerequisites
+## When to Use This Mesh
 
-- Adobe I/O CLI (`aio`) installed and configured
-- Access to Adobe Commerce services (Catalog Service, Live Search, Commerce Core)
-- Node.js 18+ and npm
+| Storefront Type                  | Mesh Repository                 | Operations Format                                  |
+| -------------------------------- | ------------------------------- | -------------------------------------------------- |
+| **EDS (Edge Delivery Services)** | `commerce-eds-mesh` (this repo) | `productSearch`, `products`, etc.                  |
+| **Headless (Next.js, React)**    | `headless-citisignal-mesh`      | `Catalog_productSearch`, `Commerce_products`, etc. |
 
-## Setup
+EDS dropins expect **unprefixed** GraphQL operations. This mesh ensures compatibility.
 
-1. **Install dependencies:**
-
-   ```bash
-   npm install
-   ```
-
-2. **Configure environment:**
-
-   ```bash
-   # Copy the example environment file
-   cp .env.example .env
-
-   # Edit .env with your credentials:
-   # - API_KEY
-   # - CATALOG_SERVICE_URL
-   # - LIVE_SEARCH_URL
-   # - COMMERCE_URL
-   # - ENVIRONMENT_ID
-   # - WEBSITE_CODE
-   # - STORE_CODE
-   # - STORE_VIEW_CODE
-   # - CUSTOMER_GROUP
-   ```
-
-3. **Configure Adobe I/O CLI:**
-   ```bash
-   aio app use
-   # Select your organization and project
-   ```
-
-## Development Workflow
-
-### Build and Deploy
+## Quick Start
 
 ```bash
-# Build mesh configuration (generates mesh.json)
+# Install dependencies
+npm install
+
+# Build mesh.json from mesh.config.js
 npm run build
 
-# Deploy to staging environment
+# Create mesh in Adobe I/O (first time)
+npm run create
+
+# Update existing mesh
 npm run update
-
-# Deploy to production environment
-npm run update:prod
-
-# Check mesh status
-npm run status
-
-# View mesh details
-npm run describe
 ```
 
-### Build Process
+## Configuration
 
-The build process (`npm run build`) performs several critical steps:
+### Environment Variables
 
-1. **Processes resolvers** with build-time injection pattern
-2. **Injects facet mappings** from `config/facet-mappings.json`
-3. **Adds utility functions** to each resolver
-4. **Generates mesh.json** with processed resolver references
-5. **Validates configuration** before deployment
+Copy `.env.example` to `.env` and configure:
 
-## Architecture
+```env
+# Commerce GraphQL endpoint
+ADOBE_COMMERCE_GRAPHQL_ENDPOINT=https://your-store.com/graphql
 
-### Directory Structure
+# Catalog Service endpoint
+ADOBE_CATALOG_SERVICE_ENDPOINT=https://catalog-service.adobe.io/graphql
 
-```
-commerce-mesh/
-├── config/
-│   └── facet-mappings.json    # SEO-friendly URL mappings
-├── resolvers-src/              # Source resolver files
-│   ├── category-page.js       # Unified category page data
-│   ├── product-cards.js       # Product listing with filters
-│   ├── product-facets.js      # Dynamic facets/filters
-│   └── ...
-├── resolvers/                  # Generated resolvers with injections
-├── scripts/
-│   ├── build-mesh.js          # Build script with injection logic
-│   └── update-mesh.js         # Deployment script
-├── schemas/
-│   └── schema.graphql         # GraphQL schema extensions
-└── mesh.json                  # Generated mesh configuration
+# Catalog Service credentials
+ADOBE_CATALOG_API_KEY=your-api-key
+ADOBE_COMMERCE_ENVIRONMENT_ID=your-environment-id
+ADOBE_COMMERCE_WEBSITE_CODE=base
+ADOBE_COMMERCE_STORE_VIEW_CODE=default
+ADOBE_COMMERCE_STORE_CODE=main_website_store
 ```
 
-### Services Integration
+### Mesh Architecture
 
-The mesh integrates three main Adobe Commerce services:
-
-1. **Catalog Service** - Product data, attributes, pricing
-2. **Live Search** - AI-powered search, dynamic facets, relevance
-3. **Commerce Core GraphQL** - Categories, navigation, cart, checkout
-
-### Resolvers
-
-All custom resolvers follow the `Citisignal_*` naming convention.
-
-#### Active Resolvers (start here)
-
-Located in `resolvers-src/`:
-
-- `Citisignal_productCards` - Product listings with pagination
-- `Citisignal_productFacets` - Dynamic filter options
-- `Citisignal_productSearchFilter` - Search with filters
-- `Citisignal_categoryNavigation` - Navigation menus
-- `Citisignal_categoryBreadcrumbs` - Breadcrumb trails
-- Plus more...
-
-#### Reference Implementations
-
-Located in `resolvers-src/reference/`:
-
-- `category-page.js` - Unified query pattern (read-only)
-
-Reference implementations show advanced patterns but are not actively maintained.
-See citisignal-nextjs/src/reference/unified-query/ for frontend example.
-
-## Dynamic Facet System
-
-The mesh implements a sophisticated facet system that:
-
-1. **Accepts any Adobe Commerce attributes** dynamically via JSON scalar type
-2. **Maps technical codes to SEO-friendly URLs** (e.g., `cs_manufacturer` → `manufacturer`)
-3. **Provides bidirectional mapping** for clean URLs and API compatibility
-4. **Supports custom and standard attributes** without schema changes
-
-Configuration in `config/facet-mappings.json`:
-
-```json
-{
-  "mappings": {
-    "cs_manufacturer": "manufacturer",
-    "cs_memory": "storage"
-  },
-  "defaults": {
-    "removePrefix": ["cs_", "attr_"],
-    "replaceUnderscore": true,
-    "toLowerCase": true
-  }
-}
+```
+┌─────────────────────────────────────────────────────────┐
+│                    API Mesh (EDS)                        │
+│                                                          │
+│  ┌─────────────────┐  ┌─────────────────┐               │
+│  │ CommerceGraphQL │  │ CatalogService  │               │
+│  │ (no prefix)     │  │ (encapsulated)  │               │
+│  └────────┬────────┘  └────────┬────────┘               │
+│           │                    │                         │
+│           └─────────┬──────────┘                         │
+│                     │                                    │
+│         Response Caching Enabled                         │
+│                     │                                    │
+└─────────────────────┼───────────────────────────────────┘
+                      │
+              ┌───────┴───────┐
+              │  EDS Dropin   │
+              │  (unprefixed) │
+              └───────────────┘
 ```
 
-## Testing
+## Comparison with Headless Mesh
 
-### GraphQL Playground
+| Feature          | EDS Mesh    | Headless Mesh                      |
+| ---------------- | ----------- | ---------------------------------- |
+| Prefixes         | None        | `Commerce_`, `Catalog_`, `Search_` |
+| Caching          | Enabled     | Optional                           |
+| Custom Resolvers | None        | Citisignal-specific                |
+| Custom Schema    | None        | Extended types                     |
+| Target           | EDS dropins | Next.js/React apps                 |
 
-After deployment, test queries using the GraphQL playground:
+## Scripts
 
-```bash
-# Get the mesh URL
-npm run describe
+- `npm run build` - Generate mesh.json from mesh.config.js
+- `npm run create` - Build and create new mesh
+- `npm run update` - Build and update existing mesh
+- `npm run status` - Check mesh deployment status
+- `npm run describe` - Show mesh configuration details
 
-# Open the URL in browser and test queries
-```
+## Related Repositories
 
-### Example Queries
-
-```graphql
-# Unified category page query
-query GetCategoryPage {
-  Citisignal_categoryPageData(
-    categoryUrlKey: "phones"
-    filter: { manufacturer: "Apple", memory: ["128GB", "256GB"] }
-    sort: { attribute: PRICE, direction: ASC }
-  ) {
-    navigation { ... }
-    products { ... }
-    facets { ... }
-    breadcrumbs { ... }
-  }
-}
-```
-
-## Troubleshooting
-
-- **Build failures**: Check `console.log` output from build script
-- **Deployment errors**: Run `npm run status` to check mesh health
-- **Query errors**: Enable debug mode in resolvers (temporarily add logging)
-- **Missing facets**: Verify facet mappings in config and rebuild
-
-## Documentation
-
-- [Build-Time Injection Pattern](docs/build-time-injection-pattern.md)
-- [Implementing Facets](docs/implementing-facets.md)
-- [Resolver Patterns](docs/resolver-patterns.md)
-- [API Mesh Limitations](docs/explorations/API%20Mesh%20Limitations.md)
-- [Debugging Guide](docs/debugging-api-mesh.md)
-
-## Related Projects
-
-- [CitiSignal Next.js Frontend](../citisignal-nextjs) - The frontend application consuming this mesh
+- **[headless-citisignal-mesh](https://github.com/skukla/headless-citisignal-mesh)** - Prefixed mesh for Headless storefronts
 
 ## License
 
