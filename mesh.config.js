@@ -5,11 +5,11 @@ require('dotenv').config();
  * EDS Commerce Mesh Configuration
  *
  * This mesh is optimized for Edge Delivery Services (EDS) storefronts:
- * - PASSTHROUGH: No prefix transforms (uses unprefixed operations like productSearch)
+ * - NATIVE: Catalog Service queries (productSearch, products, recommendations) pass through directly
+ * - FILTERED: Commerce GraphQL filtered to cart/checkout operations (avoids conflicts)
  * - CACHING: Response caching enabled for performance
- * - SIMPLE: Proxies Commerce GraphQL and Catalog Service directly
  *
- * For Headless/Next.js storefronts, use the headless-citisignal-mesh repo instead.
+ * For Headless/Next.js storefronts, use the headless-commerce-mesh repo instead.
  */
 module.exports = {
   meshConfig: {
@@ -37,7 +37,30 @@ module.exports = {
             },
           },
         },
-        // NO prefix transform - EDS uses unprefixed operations
+        // Filter Commerce to cart/checkout operations only
+        // This avoids conflicts with Catalog Service queries (products, categories)
+        transforms: [
+          {
+            filterSchema: {
+              mode: 'bare',
+              filters: [
+                // Cart operations
+                'Query.{cart, customerCart}',
+                'Mutation.{createEmptyCart, addProductsToCart, removeItemFromCart, updateCartItems, applyCouponToCart, removeCouponFromCart, setShippingAddressesOnCart, setBillingAddressOnCart, setShippingMethodsOnCart, setPaymentMethodOnCart, placeOrder, mergeCarts}',
+                // Customer operations
+                'Query.{customer, customerOrders, isEmailAvailable}',
+                'Mutation.{createCustomer, createCustomerV2, generateCustomerToken, revokeCustomerToken, updateCustomer, updateCustomerV2, changeCustomerPassword, requestPasswordResetEmail, resetPassword, createCustomerAddress, updateCustomerAddress, deleteCustomerAddress}',
+                // Wishlist operations
+                'Query.{wishlist}',
+                'Mutation.{addProductsToWishlist, removeProductsFromWishlist}',
+                // Store config (needed for currency, locale, etc.)
+                'Query.{storeConfig, availableStores, countries, country, currency}',
+                // CMS (needed for some EDS blocks)
+                'Query.{cmsPage, cmsBlocks}',
+              ],
+            },
+          },
+        ],
       },
       {
         name: 'CatalogService',
@@ -63,18 +86,8 @@ module.exports = {
             },
           },
         },
-        // Encapsulate to avoid conflicts with Commerce GraphQL
-        // This groups Catalog Service operations under the Catalog type
-        transforms: [
-          {
-            encapsulate: {
-              applyTo: {
-                query: true,
-                mutation: false,
-              },
-            },
-          },
-        ],
+        // NO transform - native passthrough for EDS drop-ins
+        // Exposes: productSearch, products, recommendations, etc.
       },
       {
         name: 'LiveSearch',
@@ -100,20 +113,9 @@ module.exports = {
             },
           },
         },
-        // Encapsulate to avoid conflicts with Commerce GraphQL
-        transforms: [
-          {
-            encapsulate: {
-              applyTo: {
-                query: true,
-                mutation: false,
-              },
-            },
-          },
-        ],
+        // NO transform - native passthrough for EDS drop-ins
+        // Exposes: productSearch (with AI ranking), attributeMetadata, etc.
       },
     ],
-    // NO filterSchema transform - EDS passes through all operations
-    // additionalTypeDefs and additionalResolvers are added by build script if schema/resolvers exist
   },
 };
