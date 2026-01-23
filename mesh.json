@@ -29,24 +29,7 @@
               "Store": "{context.headers['store']}"
             }
           }
-        },
-        "transforms": [
-          {
-            "filterSchema": {
-              "mode": "bare",
-              "filters": [
-                "Query.{cart, customerCart}",
-                "Mutation.{createEmptyCart, addProductsToCart, removeItemFromCart, updateCartItems, applyCouponToCart, removeCouponFromCart, setShippingAddressesOnCart, setBillingAddressOnCart, setShippingMethodsOnCart, setPaymentMethodOnCart, placeOrder, mergeCarts}",
-                "Query.{customer, customerOrders, isEmailAvailable}",
-                "Mutation.{createCustomer, createCustomerV2, generateCustomerToken, revokeCustomerToken, updateCustomer, updateCustomerV2, changeCustomerPassword, requestPasswordResetEmail, resetPassword, createCustomerAddress, updateCustomerAddress, deleteCustomerAddress}",
-                "Query.{wishlist}",
-                "Mutation.{addProductsToWishlist, removeProductsFromWishlist}",
-                "Query.{storeConfig, availableStores, countries, country, currency}",
-                "Query.{cmsPage, cmsBlocks}"
-              ]
-            }
-          }
-        ]
+        }
       },
       {
         "name": "CatalogService",
@@ -71,7 +54,17 @@
               "Magento-Store-Code": "{env.ADOBE_COMMERCE_STORE_CODE}"
             }
           }
-        }
+        },
+        "transforms": [
+          {
+            "encapsulate": {
+              "applyTo": {
+                "query": true,
+                "mutation": false
+              }
+            }
+          }
+        ]
       },
       {
         "name": "LiveSearch",
@@ -96,7 +89,17 @@
               "X-Api-Key": "search_gql"
             }
           }
-        }
+        },
+        "transforms": [
+          {
+            "encapsulate": {
+              "applyTo": {
+                "query": true,
+                "mutation": false
+              }
+            }
+          }
+        ]
       }
     ],
     "additionalTypeDefs": "",

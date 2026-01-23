@@ -4,12 +4,11 @@ Adobe API Mesh configuration optimized for **Edge Delivery Services (EDS)** Comm
 
 ## Overview
 
-This mesh provides a **native passthrough configuration** for EDS storefronts that:
+This mesh provides a **passthrough configuration** for EDS storefronts that:
 
-- **Native Catalog Service** - `productSearch`, `products`, `recommendations` pass through directly (no transforms)
-- **Filtered Commerce GraphQL** - Cart, checkout, and customer operations only (avoids query conflicts)
+- **No prefix transforms** - Uses unprefixed GraphQL operations (`productSearch`, not `Catalog_productSearch`)
 - **Response caching enabled** - Optimized for EDS performance requirements
-- **No custom resolvers** - EDS drop-ins call Catalog Service queries natively
+- **Simple proxy** - Passes through Commerce GraphQL and Catalog Service without custom resolvers
 
 ## When to Use This Mesh
 
@@ -60,33 +59,25 @@ ADOBE_COMMERCE_STORE_CODE=main_website_store
 ### Mesh Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                      API Mesh (EDS)                          │
-│                                                              │
-│  ┌──────────────────┐  ┌──────────────────┐  ┌────────────┐ │
-│  │ CommerceGraphQL  │  │  CatalogService  │  │ LiveSearch │ │
-│  │ (filtered)       │  │  (passthrough)   │  │(passthrough│ │
-│  │ cart, checkout,  │  │  productSearch,  │  │            │ │
-│  │ customer, etc.   │  │  products, recs  │  │            │ │
-│  └────────┬─────────┘  └────────┬─────────┘  └─────┬──────┘ │
-│           │                     │                   │        │
-│           └─────────────────────┼───────────────────┘        │
-│                                 │                            │
-│              Response Caching Enabled                        │
-│                                 │                            │
-└─────────────────────────────────┼────────────────────────────┘
-                                  │
-                    ┌─────────────┴─────────────┐
-                    │       EDS Drop-ins        │
-                    │  (native, unprefixed)     │
-                    └───────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│                    API Mesh (EDS)                        │
+│                                                          │
+│  ┌─────────────────┐  ┌─────────────────┐               │
+│  │ CommerceGraphQL │  │ CatalogService  │               │
+│  │ (no prefix)     │  │ (encapsulated)  │               │
+│  └────────┬────────┘  └────────┬────────┘               │
+│           │                    │                         │
+│           └─────────┬──────────┘                         │
+│                     │                                    │
+│         Response Caching Enabled                         │
+│                     │                                    │
+└─────────────────────┼───────────────────────────────────┘
+                      │
+              ┌───────┴───────┐
+              │  EDS Dropin   │
+              │  (unprefixed) │
+              └───────────────┘
 ```
-
-**Query Routing:**
-
-- Product queries (`productSearch`, `products`, `recommendations`) → CatalogService/LiveSearch
-- Cart/Checkout queries (`cart`, `addProductsToCart`, `placeOrder`) → CommerceGraphQL
-- Customer queries (`customer`, `generateCustomerToken`) → CommerceGraphQL
 
 ## Comparison with Headless Mesh
 
