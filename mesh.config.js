@@ -69,51 +69,35 @@ module.exports = {
             },
           },
         },
-        // Encapsulate to avoid conflicts with Commerce GraphQL
-        // This groups Catalog Service operations under the Catalog type
+        // NO encapsulate - EDS storefronts expect productSearch, recommendations, etc.
+        // at root level for dropins to work correctly
+        // Rename conflicting fields to avoid merge errors with Commerce GraphQL
         transforms: [
           {
-            encapsulate: {
-              applyTo: {
-                query: true,
-                mutation: false,
-              },
-            },
-          },
-        ],
-      },
-      {
-        name: 'LiveSearch',
-        handler: {
-          graphql: {
-            endpoint: '{env.ADOBE_CATALOG_SERVICE_ENDPOINT}',
-            operationHeaders: {
-              'Content-Type': 'application/json',
-              'Magento-Environment-Id': "{context.headers['magento-environment-id']}",
-              'Magento-Website-Code': "{context.headers['magento-website-code']}",
-              'Magento-Store-View-Code': "{context.headers['magento-store-view-code']}",
-              'Magento-Store-Code': "{context.headers['magento-store-code']}",
-              'Magento-Customer-Group': "{context.headers['magento-customer-group']}",
-              'X-Api-Key': 'search_gql',
-            },
-            schemaHeaders: {
-              'x-api-key': '{env.ADOBE_CATALOG_API_KEY}',
-              'Magento-Environment-Id': '{env.ADOBE_COMMERCE_ENVIRONMENT_ID}',
-              'Magento-Website-Code': '{env.ADOBE_COMMERCE_WEBSITE_CODE}',
-              'Magento-Store-View-Code': '{env.ADOBE_COMMERCE_STORE_VIEW_CODE}',
-              'Magento-Store-Code': '{env.ADOBE_COMMERCE_STORE_CODE}',
-              'X-Api-Key': 'search_gql',
-            },
-          },
-        },
-        // Encapsulate to avoid conflicts with Commerce GraphQL
-        transforms: [
-          {
-            encapsulate: {
-              applyTo: {
-                query: true,
-                mutation: false,
-              },
+            rename: {
+              mode: 'bare',
+              renames: [
+                {
+                  from: {
+                    type: 'Query',
+                    field: 'products',
+                  },
+                  to: {
+                    type: 'Query',
+                    field: 'catalogProducts',
+                  },
+                },
+                {
+                  from: {
+                    type: 'Query',
+                    field: 'categories',
+                  },
+                  to: {
+                    type: 'Query',
+                    field: 'catalogCategories',
+                  },
+                },
+              ],
             },
           },
         ],
