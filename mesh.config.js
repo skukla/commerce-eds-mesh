@@ -35,6 +35,12 @@ module.exports = {
               'Content-Type': 'application/json',
               Store: "{context.headers['store']}",
             },
+            // schemaHeaders are used during schema introspection at deployment time.
+            // Without Store header, Commerce may return incomplete schema missing mutations.
+            schemaHeaders: {
+              'Content-Type': 'application/json',
+              Store: '{env.ADOBE_COMMERCE_STORE_VIEW_CODE}',
+            },
           },
         },
         // NO prefix transform - EDS uses unprefixed operations

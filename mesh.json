@@ -27,6 +27,10 @@
             "operationHeaders": {
               "Content-Type": "application/json",
               "Store": "{context.headers['store']}"
+            },
+            "schemaHeaders": {
+              "Content-Type": "application/json",
+              "Store": "{env.ADOBE_COMMERCE_STORE_VIEW_CODE}"
             }
           }
         }
