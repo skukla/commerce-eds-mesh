@@ -43,7 +43,15 @@ module.exports = {
             },
           },
         },
-        // NO prefix transform - EDS uses unprefixed operations
+        // Filter out catalog queries - these come from CatalogService instead
+        // This allows products(skus: ...) to route to Catalog Service for PDP dropin
+        transforms: [
+          {
+            filterSchema: {
+              filters: ['Query.!products', 'Query.!categories'],
+            },
+          },
+        ],
       },
       {
         name: 'CatalogService',
@@ -69,38 +77,9 @@ module.exports = {
             },
           },
         },
-        // NO encapsulate - EDS storefronts expect productSearch, recommendations, etc.
-        // at root level for dropins to work correctly
-        // Rename conflicting fields to avoid merge errors with Commerce GraphQL
-        transforms: [
-          {
-            rename: {
-              mode: 'bare',
-              renames: [
-                {
-                  from: {
-                    type: 'Query',
-                    field: 'products',
-                  },
-                  to: {
-                    type: 'Query',
-                    field: 'catalogProducts',
-                  },
-                },
-                {
-                  from: {
-                    type: 'Query',
-                    field: 'categories',
-                  },
-                  to: {
-                    type: 'Query',
-                    field: 'catalogCategories',
-                  },
-                },
-              ],
-            },
-          },
-        ],
+        // NO transforms - products(skus: ...) and other Catalog Service queries
+        // are exposed at root level for PDP/PLP dropins to work correctly.
+        // Commerce's products/categories are filtered out above to avoid conflicts.
       },
     ],
     // NO filterSchema transform - EDS passes through all operations

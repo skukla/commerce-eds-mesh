@@ -33,7 +33,17 @@
               "Store": "{env.ADOBE_COMMERCE_STORE_VIEW_CODE}"
             }
           }
-        }
+        },
+        "transforms": [
+          {
+            "filterSchema": {
+              "filters": [
+                "Query.!products",
+                "Query.!categories"
+              ]
+            }
+          }
+        ]
       },
       {
         "name": "CatalogService",
@@ -58,36 +68,7 @@
               "Magento-Store-Code": "{env.ADOBE_COMMERCE_STORE_CODE}"
             }
           }
-        },
-        "transforms": [
-          {
-            "rename": {
-              "mode": "bare",
-              "renames": [
-                {
-                  "from": {
-                    "type": "Query",
-                    "field": "products"
-                  },
-                  "to": {
-                    "type": "Query",
-                    "field": "catalogProducts"
-                  }
-                },
-                {
-                  "from": {
-                    "type": "Query",
-                    "field": "categories"
-                  },
-                  "to": {
-                    "type": "Query",
-                    "field": "catalogCategories"
-                  }
-                }
-              ]
-            }
-          }
-        ]
+        }
       }
     ],
     "additionalTypeDefs": "",
