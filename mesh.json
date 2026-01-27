@@ -91,6 +91,8 @@
       }
     ],
     "additionalTypeDefs": "",
-    "additionalResolvers": []
+    "additionalResolvers": [
+      "./build/resolvers/type-fixes.js"
+    ]
   }
 }
