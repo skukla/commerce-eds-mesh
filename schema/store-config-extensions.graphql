@@ -1,0 +1,30 @@
+# StoreConfig Extensions for Suite Release 5 (v3 dropins)
+#
+# These fields are required by the v3 storefront dropins but may not be
+# present in all Adobe Commerce backend versions. The mesh resolvers
+# return sensible defaults when the backend doesn't support these fields.
+
+# Money type for price fields (if not already defined by backend)
+type Money {
+  value: Float
+  currency: String
+}
+
+# Extend StoreConfig with printed card / gift options fields
+extend type StoreConfig {
+  # Printed card price (v3 dropins expect this)
+  printed_card_priceV2: Money
+
+  # Gift options configuration
+  allow_printed_card: String
+  sales_printed_card: String
+  sales_gift_wrapping: String
+
+  # Additional fields that v3 dropins may query
+  gift_wrapping_available: String
+  gift_receipt_available: String
+  allow_gift_receipt: String
+  allow_gift_wrapping: String
+  cart_gift_wrapping: String
+  cart_printed_card: String
+}
