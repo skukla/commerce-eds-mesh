@@ -1,15 +1,8 @@
 # Missing fields for EDS Commerce Dropins
 #
-# These fields are queried by dropins but may not exist in all Commerce configurations.
-
-# Personalization fields for StoreConfig
-extend type StoreConfig {
-  share_active_segments: String
-  graphql_share_customer_group: String
-  share_applied_cart_rule: String
-}
-
-# ReCaptcha configuration field
-extend type ReCaptchaConfigurationV3 {
-  theme: String
-}
+# Note: As of Feb 2026, the following fields now exist in Commerce backend:
+# - StoreConfig: share_active_segments, graphql_share_customer_group, share_applied_cart_rule
+# - ReCaptchaConfigurationV3: theme
+# - StoreConfig: printed_card_priceV2
+#
+# No extensions needed - Commerce schema already includes these fields.

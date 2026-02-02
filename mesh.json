@@ -71,7 +71,7 @@
         }
       }
     ],
-    "additionalTypeDefs": "extend type StoreConfig {\n  share_active_segments: String\n  graphql_share_customer_group: String\n  share_applied_cart_rule: String\n}\n\nextend type ReCaptchaConfigurationV3 {\n  theme: String\n}",
+    "additionalTypeDefs": "",
     "additionalResolvers": [
       "./build/resolvers/type-fixes.js"
     ]
