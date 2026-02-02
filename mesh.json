@@ -71,9 +71,8 @@
         }
       }
     ],
-    "additionalTypeDefs": "type Money {\n  value: Float\n  currency: String\n}\n\nextend type StoreConfig {\n  printed_card_priceV2: Money\n\n  allow_printed_card: String\n  sales_printed_card: String\n  sales_gift_wrapping: String\n\n  gift_wrapping_available: String\n  gift_receipt_available: String\n  allow_gift_receipt: String\n  allow_gift_wrapping: String\n  cart_gift_wrapping: String\n  cart_printed_card: String\n}",
+    "additionalTypeDefs": "extend type StoreConfig {\n  share_active_segments: String\n  graphql_share_customer_group: String\n  share_applied_cart_rule: String\n}\n\nextend type ReCaptchaConfigurationV3 {\n  theme: String\n}",
     "additionalResolvers": [
-      "./build/resolvers/store-config-resolver.js",
       "./build/resolvers/type-fixes.js"
     ]
   }

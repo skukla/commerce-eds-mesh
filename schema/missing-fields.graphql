@@ -1,0 +1,15 @@
+# Missing fields for EDS Commerce Dropins
+#
+# These fields are queried by dropins but may not exist in all Commerce configurations.
+
+# Personalization fields for StoreConfig
+extend type StoreConfig {
+  share_active_segments: String
+  graphql_share_customer_group: String
+  share_applied_cart_rule: String
+}
+
+# ReCaptcha configuration field
+extend type ReCaptchaConfigurationV3 {
+  theme: String
+}
