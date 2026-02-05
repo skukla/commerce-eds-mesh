@@ -71,7 +71,7 @@
         }
       }
     ],
-    "additionalTypeDefs": "",
+    "additionalTypeDefs": "extend type StoreConfig {\n  share_active_segments: Boolean\n  graphql_share_customer_group: Boolean\n  share_applied_cart_rule: Boolean\n}\n\nextend type OrderTotal {\n  grand_total_excl_tax: Money\n}",
     "additionalResolvers": [
       "./build/resolvers/type-fixes.js"
     ]

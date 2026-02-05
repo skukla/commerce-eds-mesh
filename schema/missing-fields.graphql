@@ -1,8 +1,18 @@
-# Missing fields for EDS Commerce Dropins
+# Schema extensions for fields that may not exist on all Commerce backends
 #
-# Note: As of Feb 2026, the following fields now exist in Commerce backend:
-# - StoreConfig: share_active_segments, graphql_share_customer_group, share_applied_cart_rule
-# - ReCaptchaConfigurationV3: theme
-# - StoreConfig: printed_card_priceV2
-#
-# No extensions needed - Commerce schema already includes these fields.
+# These fields are queried by EDS Commerce dropins but require specific modules
+# that may not be installed on all Commerce instances. We extend the schema to
+# ensure these fields exist, and the resolvers provide default values.
+
+# StoreConfig extensions for customer segment and cart rule sharing
+extend type StoreConfig {
+  share_active_segments: Boolean
+  graphql_share_customer_group: Boolean
+  share_applied_cart_rule: Boolean
+}
+
+# OrderTotal extension for tax-exclusive grand total
+# Note: Money type already exists in Commerce schema
+extend type OrderTotal {
+  grand_total_excl_tax: Money
+}
