@@ -554,8 +554,11 @@ async function generateMeshConfig() {
     spinner.text = format.muted('Injecting facet mappings into resolvers');
     const resolverFiles = processResolversWithMappings();
 
-    // Add the combined schema and resolvers to the config
-    meshConfig.meshConfig.additionalTypeDefs = combinedSchema;
+    // Add the combined schema and resolvers to the config. With no schema/ folder there
+    // are no type definitions, and the key is left out rather than written as "".
+    if (combinedSchema) {
+      meshConfig.meshConfig.additionalTypeDefs = combinedSchema;
+    }
     meshConfig.meshConfig.additionalResolvers = resolverFiles;
 
     // Write the configuration to mesh.json
