@@ -104,3 +104,5 @@ ADOBE_COMMERCE_STORE_CODE=main_website_store
 ## License
 
 Private - All rights reserved
+
+**Releasing:** a push to `main` reaches nobody; a published release does. See [RELEASING.md](RELEASING.md).
