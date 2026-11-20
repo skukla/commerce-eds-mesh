@@ -1,6 +1,6 @@
 {
   "name": "commerce-eds-mesh",
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0-beta.6",
   "private": true,
   "description": "Adobe API Mesh for EDS Commerce storefronts - passthrough configuration with caching",
   "dependencies": {
